@@ -291,7 +291,7 @@ Thanh toán
    ↓
 Đăng nhập
    ↓
-Tạo đơn hàng
+Tạo đơn hàng.
    ↓
 Chọn WALLET / CARD
    ↓
