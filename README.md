@@ -224,17 +224,22 @@ Nếu database `BrewLite` đã tồn tại thì bỏ qua bước này.
 
 ---
 
-# 7. Cấu hình biến môi trường Backend
+# 7. Cấu hình `.env` trên máy mới
 
-Trong Git repository **không nên lưu file `.env` chứa mật khẩu thật**.
+File `.env` **không được lấy từ máy của người phát triển ban đầu**. Mỗi máy clone project phải tự tạo `.env` với thông tin SQL Server và JWT secret của chính máy đó.
 
-Trên máy mới tạo file:
+## 7.1. Tạo file `.env`
 
-```text
-C:\BrewLite\backend\.env
+Sau khi clone project, mở CMD:
+
+```cmd
+cd C:\BrewLite\backend
+notepad .env
 ```
 
-Nội dung mẫu:
+Nếu Notepad hỏi tạo file mới thì chọn **Yes**.
+
+Dán mẫu sau vào file:
 
 ```env
 DATABASE_URL="sqlserver://localhost:1433;database=BrewLite;user=sa;password=YOUR_SQL_PASSWORD;encrypt=true;trustServerCertificate=true"
@@ -251,16 +256,72 @@ JWT_EXPIRES_IN="1d"
 MOCK_PAYMENT_FAIL="false"
 ```
 
-Thay:
+## 7.2. Thay thông tin SQL Server bằng thông tin của máy đó
 
-```text
-YOUR_SQL_PASSWORD
-YOUR_JWT_SECRET
+### Trường hợp dùng SQL Server local và port 1433
+
+Giữ nguyên:
+
+```env
+DB_SERVER="localhost"
+DB_PORT="1433"
+DB_NAME="BrewLite"
+DB_USER="sa"
 ```
 
-bằng giá trị thật trên máy đang chạy project.
+Chỉ thay:
 
-> Không commit `.env` lên GitHub.
+```env
+YOUR_SQL_PASSWORD
+```
+
+bằng **mật khẩu tài khoản `sa` được tạo trên máy mới**. Mật khẩu này không cần và không nên giống mật khẩu của máy người phát triển ban đầu.
+
+Đồng thời thay cùng mật khẩu đó trong `DATABASE_URL`:
+
+```env
+DATABASE_URL="sqlserver://localhost:1433;database=BrewLite;user=sa;password=MAT_KHAU_SA_CUA_MAY_NAY;encrypt=true;trustServerCertificate=true"
+```
+
+### Trường hợp máy mới dùng SQL Server Express / instance khác
+
+Không tự động đổi theo máy cũ. Người cài đặt phải kiểm tra **Server name, tài khoản đăng nhập và port** trên chính máy đó. Khuyến nghị cấu hình SQL Server TCP/IP dùng port `1433` để khớp với cấu hình mẫu ở trên.
+
+Nếu server không phải `localhost`, thay phần tương ứng, ví dụ:
+
+```env
+DB_SERVER="TEN-MAY-HOAC-SERVER"
+```
+
+và cập nhật `DATABASE_URL` theo server/port thực tế.
+
+## 7.3. Tạo JWT secret riêng
+
+`JWT_SECRET` là khóa dùng để ký JWT. Không dùng khóa của máy người phát triển ban đầu. Có thể tự đặt một chuỗi dài, ví dụ:
+
+```env
+JWT_SECRET="brewLite-local-secret-change-this"
+```
+
+Tốt hơn nên dùng một chuỗi ngẫu nhiên dài hơn cho máy dùng thật.
+
+## 7.4. Kiểm tra file `.env`
+
+File cuối cùng trên **máy mới** sẽ có dạng:
+
+```env
+DATABASE_URL="sqlserver://localhost:1433;database=BrewLite;user=sa;password=MAT_KHAU_CUA_MAY_NAY;encrypt=true;trustServerCertificate=true"
+DB_SERVER="localhost"
+DB_PORT="1433"
+DB_NAME="BrewLite"
+DB_USER="sa"
+DB_PASSWORD="MAT_KHAU_CUA_MAY_NAY"
+JWT_SECRET="CHUOI_BI_MAT_RIENG_CUA_MAY_NAY"
+JWT_EXPIRES_IN="1d"
+MOCK_PAYMENT_FAIL="false"
+```
+
+> **Quan trọng:** Không commit `.env` lên GitHub. Không chép `.env` từ máy khác vào project. Mỗi máy phải tự tạo file `.env` theo cấu hình SQL Server của máy đó.
 
 ---
 
