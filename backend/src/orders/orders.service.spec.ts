@@ -1,18 +1,47 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { OrdersService } from './orders.service.js';
+import { beforeEach, describe, expect, it } from 'vitest';
+import {
+  ORDER_STATUS,
+  canTransition,
+} from './order-status.js';
 
-describe('OrdersService', () => {
-  let service: OrdersService;
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [OrdersService],
-    }).compile();
-
-    service = module.get<OrdersService>(OrdersService);
+describe('Order State Machine', () => {
+  beforeEach(() => {
+    // Không cần database cho unit test State Machine.
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  it('should allow a valid transition from PREPARING to READY', () => {
+    expect(
+      canTransition(
+        ORDER_STATUS.PREPARING,
+        ORDER_STATUS.READY,
+      ),
+    ).toBe(true);
+  });
+
+  it('should allow a valid transition from READY to COMPLETED', () => {
+    expect(
+      canTransition(
+        ORDER_STATUS.READY,
+        ORDER_STATUS.COMPLETED,
+      ),
+    ).toBe(true);
+  });
+
+  it('should reject an invalid transition from PREPARING to COMPLETED', () => {
+    expect(
+      canTransition(
+        ORDER_STATUS.PREPARING,
+        ORDER_STATUS.COMPLETED,
+      ),
+    ).toBe(false);
+  });
+
+  it('should reject a transition from COMPLETED back to PAID', () => {
+    expect(
+      canTransition(
+        ORDER_STATUS.COMPLETED,
+        ORDER_STATUS.PAID,
+      ),
+    ).toBe(false);
   });
 });

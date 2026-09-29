@@ -3,8 +3,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import {
+  ORDER_STATUS,
+  canTransition,
+} from './order-status.js';
+
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateOrderDto } from './dto/create-order.dto.js';
+
 
 @Injectable()
 export class OrdersService {
@@ -94,13 +100,33 @@ export class OrdersService {
               : null,
         });
       }
+            const promoCode = createOrderDto.promoCode
+        ?.trim()
+        .toUpperCase();
+
+      let discount = 0;
+
+      if (promoCode) {
+        if (promoCode !== 'BREW10') {
+          throw new BadRequestException(
+            'Mã khuyến mãi không hợp lệ',
+          );
+        }
+
+        discount = Math.min(
+          Math.floor(total * 0.1),
+          20000,
+        );
+      }
+
+      const finalTotal = total - discount;
 
       const order = await tx.order.create({
         data: {
           userId,
           status: 'PENDING',
-          total,
-          discount: 0,
+          total: finalTotal,
+          discount,
           loyaltyEarned: 0,
           items: {
             create: orderItems,
@@ -112,25 +138,82 @@ export class OrdersService {
       });
 
       for (const item of orderItems) {
-        await tx.product.update({
-          where: {
-            id: item.productId,
-          },
-          data: {
-            stock: {
-              decrement: item.qty,
-            },
-          },
-        });
-      }
+  const result = await tx.product.updateMany({
+    where: {
+      id: item.productId,
+      isActive: true,
+      stock: {
+        gte: item.qty,
+      },
+    },
+    data: {
+      stock: {
+        decrement: item.qty,
+      },
+    },
+  });
+
+  if (result.count === 0) {
+    throw new BadRequestException(
+      `Sản phẩm ID ${item.productId} không đủ tồn kho`,
+    );
+  }
+}
 
       return {
-        message: 'Tạo đơn hàng thành công',
-        orderId: order.id,
-        status: order.status,
-        total: order.total,
-        items: order.items,
-      };
+  message: 'Tạo đơn hàng thành công',
+  orderId: order.id,
+  status: order.status,
+  subtotal: total,
+  discount: order.discount,
+  total: order.total,
+  promoCode: promoCode ?? null,
+  items: order.items,
+};
     });
   }
+  async findMyOrders(userId: number) {
+  return this.prisma.order.findMany({
+    where: {
+      userId,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+    include: {
+      items: {
+        include: {
+          product: true,
+        },
+      },
+      payments: true,
+    },
+  });
+}
+async transitionStatus(orderId: number, newStatus: string) {
+  const order = await this.prisma.order.findUnique({
+    where: {
+      id: orderId,
+    },
+  });
+
+  if (!order) {
+    throw new NotFoundException('Không tìm thấy đơn hàng');
+  }
+
+  if (!canTransition(order.status, newStatus)) {
+    throw new BadRequestException(
+      `Không thể chuyển trạng thái từ ${order.status} sang ${newStatus}`,
+    );
+  }
+
+  return this.prisma.order.update({
+    where: {
+      id: orderId,
+    },
+    data: {
+      status: newStatus,
+    },
+  });
+}
 }

@@ -1,18 +1,14 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { describe, expect, it } from 'vitest';
 import { OrdersController } from './orders.controller.js';
 
 describe('OrdersController', () => {
-  let controller: OrdersController;
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [OrdersController],
-    }).compile();
-
-    controller = module.get<OrdersController>(OrdersController);
-  });
-
   it('should be defined', () => {
+    const ordersService = {};
+
+    const controller = new OrdersController(
+      ordersService as any,
+    );
+
     expect(controller).toBeDefined();
   });
 });
