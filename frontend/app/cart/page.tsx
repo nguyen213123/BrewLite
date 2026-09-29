@@ -26,25 +26,39 @@ const handleCreateOrder = async () => {
     setIsCreatingOrder(true);
     setOrderError('');
 
-    const response = await fetch(
-      'http://localhost:3001/orders',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          items: items.map((item) => ({
-            productId: item.productId,
-            size: item.size,
-            quantity: item.quantity,
-            toppings: item.toppings,
-          })),
-        }),
-      },
-    );
+    const accessToken = localStorage.getItem('accessToken');
 
+if (!accessToken) {
+  router.push('/login');
+  return;
+}
+
+const response = await fetch(
+  'http://localhost:3001/orders',
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({
+      items: items.map((item) => ({
+        productId: item.productId,
+        size: item.size,
+        quantity: item.quantity,
+        toppings: item.toppings,
+      })),
+    }),
+  },
+);
     const data = await response.json();
+    if (response.status === 401) {
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('user');
+
+  router.push('/login');
+  return;
+}
 
     if (!response.ok) {
       throw new Error(
@@ -214,15 +228,12 @@ const handleCreateOrder = async () => {
               )}
 
               <button
-                type="button"
-                onClick={handleCreateOrder}
-                disabled={isCreatingOrder}
-                className="mt-5 w-full rounded-xl bg-amber-700 px-6 py-4 text-lg font-semibold text-white transition hover:bg-amber-800 disabled:cursor-not-allowed disabled:bg-gray-400"
-              >
-                {isCreatingOrder
-                  ? 'Đang tạo đơn...'
-                  : 'Thanh toán'}
-              </button>
+  type="button"
+  onClick={() => router.push('/checkout')}
+  className="mt-5 w-full rounded-xl bg-amber-700 px-6 py-4 text-lg font-semibold text-white transition hover:bg-amber-800"
+>
+  Thanh toán
+</button>
             </div>
           </div>
         )}

@@ -14,16 +14,25 @@ interface Product {
   isActive: boolean;
 }
 
+interface User {
+  id: number;
+  email: string;
+  name?: string | null;
+  loyaltyPoints?: number;
+}
+
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [user, setUser] = useState<User | null>(null);
+
   const cartItems = useCartStore((state) => state.items);
 
-const cartItemCount = cartItems.reduce(
-  (total, item) => total + item.quantity,
-  0,
-);
+  const cartItemCount = cartItems.reduce(
+    (total, item) => total + item.quantity,
+    0,
+  );
 
   useEffect(() => {
     fetch('http://localhost:3001/products')
@@ -43,6 +52,19 @@ const cartItemCount = cartItems.reduce(
       .finally(() => {
         setLoading(false);
       });
+
+    // Kiểm tra người dùng đã đăng nhập hay chưa
+    const savedUser = localStorage.getItem('user');
+
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch {
+        localStorage.removeItem('user');
+        localStorage.removeItem('accessToken');
+        setUser(null);
+      }
+    }
   }, []);
 
   const formatPrice = (price: number) => {
@@ -53,29 +75,49 @@ const cartItemCount = cartItems.reduce(
     <main className="min-h-screen bg-gray-100 px-6 py-10">
       <div className="mx-auto max-w-6xl">
         <div className="mb-8 flex items-start justify-between gap-4">
-  <div>
-    <h1 className="text-4xl font-bold text-amber-900">
-      BrewLite
-    </h1>
+          <div>
+            <h1 className="text-4xl font-bold text-amber-900">
+              BrewLite
+            </h1>
 
-    <p className="mt-2 text-gray-600">
-      Cà phê ngon - Đặt nhanh - Thanh toán không tiền mặt
-    </p>
-  </div>
+            <p className="mt-2 text-gray-600">
+              Cà phê ngon - Đặt nhanh - Thanh toán không tiền mặt
+            </p>
+          </div>
 
-  <Link
-    href="/cart"
-    className="relative rounded-xl bg-amber-700 px-5 py-3 font-semibold text-white shadow hover:bg-amber-800"
-  >
-    🛒 Giỏ hàng
+          <div className="flex items-center gap-3">
+            {/* Tài khoản */}
+            {!user ? (
+              <Link
+                href="/login"
+                className="rounded-xl border border-amber-700 bg-white px-5 py-3 font-semibold text-amber-800 shadow hover:bg-amber-50"
+              >
+                Đăng nhập
+              </Link>
+            ) : (
+              <Link
+                href="/account"
+                className="rounded-xl border border-amber-700 bg-white px-5 py-3 font-semibold text-amber-800 shadow hover:bg-amber-50"
+              >
+                👤 {user.name || user.email}
+              </Link>
+            )}
 
-    {cartItemCount > 0 && (
-      <span className="absolute -right-2 -top-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-red-600 px-1 text-xs font-bold text-white">
-        {cartItemCount}
-      </span>
-    )}
-  </Link>
-</div>
+            {/* Giỏ hàng */}
+            <Link
+              href="/cart"
+              className="relative rounded-xl bg-amber-700 px-5 py-3 font-semibold text-white shadow hover:bg-amber-800"
+            >
+              🛒 Giỏ hàng
+
+              {cartItemCount > 0 && (
+                <span className="absolute -right-2 -top-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-red-600 px-1 text-xs font-bold text-white">
+                  {cartItemCount}
+                </span>
+              )}
+            </Link>
+          </div>
+        </div>
 
         {loading && (
           <div className="py-10 text-center text-gray-500">
