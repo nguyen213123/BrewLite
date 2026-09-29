@@ -1,163 +1,293 @@
 # BrewLite ☕
 
-BrewLite là ứng dụng đặt cà phê trực tuyến, hỗ trợ xem menu, chọn sản phẩm, tùy chọn size/topping, quản lý giỏ hàng, đăng nhập, đặt hàng và thanh toán không tiền mặt.
+BrewLite là ứng dụng đặt cà phê trực tuyến được xây dựng cho bài tập Software Engineering.
+
+Hệ thống hỗ trợ:
+
+- Xem menu sản phẩm
+- Xem chi tiết sản phẩm
+- Chọn size S/M/L
+- Chọn topping
+- Giỏ hàng
+- Đăng ký / đăng nhập
+- Xác thực JWT
+- Tạo đơn hàng
+- Thanh toán không tiền mặt dạng mock: WALLET / CARD
+- Idempotency-Key cho thanh toán
+- Quản lý trạng thái đơn hàng
+- Promotion `BREW10`
+- Loyalty Point
+- Kiểm soát tồn kho khi có request đồng thời
+- Lịch sử mua hàng
+- Unit / integration tests bằng Vitest
 
 ---
 
-## 1. Công nghệ sử dụng
+# 1. Công nghệ sử dụng
 
-### Frontend
+## Frontend
+
 - Next.js
 - TypeScript
 - Tailwind CSS
 - Zustand
 
-### Backend
+## Backend
+
 - NestJS
 - TypeScript
 - Prisma ORM
-- JWT Authentication
+- JWT
 - bcrypt
+- class-validator
+- class-transformer
+- Vitest
+- Supertest
 
-### Database
+## Database
+
 - Microsoft SQL Server
 
 ---
 
-## 2. Kiến trúc dự án
+# 2. Yêu cầu môi trường
+
+Máy mới cần cài các phần mềm sau trước khi clone và chạy project.
+
+## 2.1. Git
+
+Cài Git:
+
+https://git-scm.com/
+
+Kiểm tra:
+
+```cmd
+git --version
+```
+
+---
+
+## 2.2. Node.js và npm
+
+Cài Node.js:
+
+https://nodejs.org/
+
+Project đã được kiểm thử trên môi trường:
 
 ```text
-BrewLite/
-├── backend/
-│   ├── src/
-│   │   ├── auth/
-│   │   ├── orders/
-│   │   ├── payments/
-│   │   ├── products/
-│   │   ├── prisma/
-│   │   └── main.ts
-│   ├── prisma/
-│   │   └── schema.prisma
-│   └── .env
-│
-├── frontend/
-│   ├── app/
-│   │   ├── checkout/
-│   │   │   ├── page.tsx
-│   │   │   └── success/
-│   │   │       └── page.tsx
-│   │   ├── login/
-│   │   │   └── page.tsx
-│   │   ├── orders/
-│   │   │   └── page.tsx
-│   │   ├── products/
-│   │   │   └── [id]/
-│   │   │       └── page.tsx
-│   │   ├── cart/
-│   │   │   └── page.tsx
-│   │   └── page.tsx
-│   └── store/
-│       └── cartStore.ts
-│
+Node.js: 24.21.0
+npm:     11.19.0
+```
+
+Kiểm tra trên máy mới:
+
+```cmd
+node -v
+npm -v
+```
+
+Nên dùng phiên bản Node.js tương thích với project hiện tại.
+
+---
+
+## 2.3. Microsoft SQL Server
+
+Cài Microsoft SQL Server.
+
+Project hiện tại sử dụng SQL Server với:
+
+```text
+Server:   localhost
+Port:     1433
+Database: BrewLite
+User:     sa
+```
+
+SQL Server phải cho phép kết nối TCP/IP trên port `1433`.
+
+Trong SQL Server Configuration Manager, kiểm tra:
+
+```text
+SQL Server Network Configuration
+→ Protocols for MSSQLSERVER
+→ TCP/IP
+→ Enabled
+```
+
+Trong `TCP/IP → IP Addresses`, phần `IPAll` nên cấu hình:
+
+```text
+TCP Dynamic Ports: để trống
+TCP Port:          1433
+```
+
+Sau khi thay đổi cấu hình TCP/IP, khởi động lại dịch vụ SQL Server.
+
+---
+
+## 2.4. SQL Server Management Studio (SSMS)
+
+Khuyến nghị cài SSMS để tạo database, kiểm tra dữ liệu và chạy các script SQL.
+
+https://learn.microsoft.com/sql/ssms/download-sql-server-management-studio-ssms
+
+---
+
+# 3. Clone project từ GitHub
+
+Ví dụ repository GitHub của project là:
+
+```text
+https://github.com/<username>/BrewLite.git
+```
+
+Trên máy mới mở CMD:
+
+```cmd
+cd C:\
+git clone https://github.com/<username>/BrewLite.git BrewLite
+```
+
+Sau khi clone:
+
+```cmd
+cd C:\BrewLite
+```
+
+Kiểm tra:
+
+```cmd
+dir
+```
+
+Cấu trúc cơ bản phải có:
+
+```text
+C:\BrewLite
+├── backend
+├── frontend
 └── README.md
 ```
 
----
-
-## 3. Các chức năng chính
-
-### 3.1. Sản phẩm
-- Xem danh sách sản phẩm.
-- Xem chi tiết sản phẩm.
-- Chọn size S/M/L.
-- Chọn topping.
-- Tự động tính giá theo size và topping.
-
-### 3.2. Giỏ hàng
-- Thêm sản phẩm.
-- Tăng số lượng.
-- Giảm số lượng.
-- Xóa sản phẩm.
-- Tự động tính tổng tiền.
-- Hiển thị số lượng sản phẩm trên biểu tượng giỏ hàng.
-
-### 3.3. Tài khoản
-- Đăng ký tài khoản.
-- Đăng nhập.
-- Mã hóa mật khẩu bằng bcrypt.
-- Xác thực bằng JWT.
-
-### 3.4. Đặt hàng
-- Tạo đơn hàng từ giỏ hàng.
-- Kiểm tra sản phẩm.
-- Kiểm tra tồn kho.
-- Tính tổng tiền.
-- Lưu đơn hàng với trạng thái `PENDING`.
-
-### 3.5. Thanh toán
-- Hỗ trợ phương thức `WALLET`.
-- Hỗ trợ phương thức `CARD`.
-- Mock payment.
-- Thanh toán thành công chuyển trạng thái đơn hàng sang `PAID`.
-- Thanh toán thất bại chuyển trạng thái sang `PAYMENT_FAILED`.
-- Hiển thị màn hình xác nhận sau khi thanh toán.
-
-### 3.6. Lịch sử đơn hàng
-- Xem lịch sử đơn hàng của tài khoản hiện tại.
-- Hiển thị mã đơn hàng.
-- Hiển thị ngày đặt hàng.
-- Hiển thị sản phẩm trong đơn.
-- Hiển thị size và topping.
-- Hiển thị tổng tiền.
-- Hiển thị trạng thái đơn hàng.
-- Hiển thị phương thức thanh toán.
+> Thay `<username>` và URL repository bằng repository GitHub thật của project.
 
 ---
 
-## 4. API chính
+# 4. Cài đặt Backend
 
-### Products
+Mở CMD:
 
-```text
-GET /products
-GET /products/:id
+```cmd
+cd C:\BrewLite\backend
+npm install
 ```
 
-### Authentication
+Kiểm tra Prisma:
 
-```text
-POST /auth/register
-POST /auth/login
+```cmd
+npx prisma -v
 ```
 
-### Orders
+Kiểm tra NestJS:
 
-```text
-POST /orders
-GET /orders/me
-```
-
-### Payments
-
-```text
-POST /payments
+```cmd
+npx nest --version
 ```
 
 ---
 
-## 5. Database
+# 5. Cài đặt Frontend
 
-Database sử dụng Microsoft SQL Server.
+Mở CMD mới:
 
-```text
-Server: localhost
-Port: 1433
-Database: BrewLite
+```cmd
+cd C:\BrewLite\frontend
+npm install
 ```
 
-### Các bảng chính
+---
+
+# 6. Tạo database SQL Server
+
+Mở SSMS và kết nối SQL Server.
+
+Tạo database:
+
+```sql
+CREATE DATABASE BrewLite;
+GO
+```
+
+Nếu database `BrewLite` đã tồn tại thì bỏ qua bước này.
+
+---
+
+# 7. Cấu hình biến môi trường Backend
+
+Trong Git repository **không nên lưu file `.env` chứa mật khẩu thật**.
+
+Trên máy mới tạo file:
 
 ```text
+C:\BrewLite\backend\.env
+```
+
+Nội dung mẫu:
+
+```env
+DATABASE_URL="sqlserver://localhost:1433;database=BrewLite;user=sa;password=YOUR_SQL_PASSWORD;encrypt=true;trustServerCertificate=true"
+
+DB_SERVER="localhost"
+DB_PORT="1433"
+DB_NAME="BrewLite"
+DB_USER="sa"
+DB_PASSWORD="YOUR_SQL_PASSWORD"
+
+JWT_SECRET="YOUR_JWT_SECRET"
+JWT_EXPIRES_IN="1d"
+
+MOCK_PAYMENT_FAIL="false"
+```
+
+Thay:
+
+```text
+YOUR_SQL_PASSWORD
+YOUR_JWT_SECRET
+```
+
+bằng giá trị thật trên máy đang chạy project.
+
+> Không commit `.env` lên GitHub.
+
+---
+
+# 8. Khởi tạo database bằng Prisma
+
+Trong backend:
+
+```cmd
+cd C:\BrewLite\backend
+```
+
+Triển khai migration:
+
+```cmd
+npx prisma migrate deploy
+```
+
+Sinh Prisma Client:
+
+```cmd
+npx prisma generate
+```
+
+Database sau migration sẽ có các bảng chính:
+
+```text
+_prisma_migrations
 User
 Product
 Order
@@ -167,90 +297,105 @@ Payment
 
 ---
 
-## 6. Cấu hình Backend
+# 9. Dữ liệu mẫu sản phẩm
 
-Di chuyển vào thư mục backend:
+`prisma migrate deploy` tạo cấu trúc database nhưng không tự tạo dữ liệu sản phẩm nếu project không có seed script.
 
-```bash
-cd backend
+Nếu database mới chưa có sản phẩm, mở SSMS và chạy:
+
+```sql
+USE BrewLite;
+GO
+
+INSERT INTO [dbo].[Product]
+([name], [description], [price], [imageUrl], [stock], [isActive], [createdAt], [updatedAt])
+VALUES
+(N'Cà phê sữa', N'Cà phê sữa truyền thống', 35000, N'/images/ca-phe-sua.jpg', 50, 1, GETDATE(), GETDATE()),
+(N'Americano', N'Americano đậm vị', 40000, N'/images/americano.jpg', 50, 1, GETDATE(), GETDATE()),
+(N'Cappuccino', N'Cappuccino thơm béo', 45000, N'/images/cappuccino.jpg', 30, 1, GETDATE(), GETDATE()),
+(N'Trà đào', N'Trà đào thanh mát', 39000, N'/images/tra-dao.jpg', 40, 1, GETDATE(), GETDATE());
+GO
 ```
 
-Cài đặt dependencies:
+Sau đó kiểm tra:
 
-```bash
-npm install
+```sql
+SELECT id, name, price, stock, isActive
+FROM [dbo].[Product]
+ORDER BY id;
+GO
 ```
-
-Tạo file:
-
-```text
-backend/.env
-```
-
-Cấu hình các biến môi trường:
-
-```env
-DATABASE_URL="..."
-
-DB_SERVER="localhost"
-DB_PORT="1433"
-DB_NAME="BrewLite"
-DB_USER="sa"
-DB_PASSWORD="your_password"
-
-JWT_SECRET="your_secret"
-JWT_EXPIRES_IN="1d"
-
-MOCK_PAYMENT_FAIL="false"
-```
-
-> Không đưa mật khẩu SQL Server và JWT secret thật lên GitHub.
 
 ---
 
-## 7. Chạy Backend
+# 10. Kiểm tra thư mục ảnh Frontend
 
-Mở terminal:
+Frontend sử dụng các đường dẫn ảnh:
 
-```bash
-cd C:\BrewLite\backend
+```text
+/images/ca-phe-sua.jpg
+/images/americano.jpg
+/images/cappuccino.jpg
+/images/tra-dao.jpg
 ```
 
-Chạy:
+Nếu repository có thư mục ảnh trong `frontend/public/images`, giữ nguyên cấu trúc đó:
 
-```bash
+```text
+frontend/
+└── public/
+    └── images/
+        ├── ca-phe-sua.jpg
+        ├── americano.jpg
+        ├── cappuccino.jpg
+        └── tra-dao.jpg
+```
+
+Nếu chưa có ảnh, giao diện vẫn có thể chạy nhưng có thể không hiển thị ảnh sản phẩm tùy implementation hiện tại.
+
+---
+
+# 11. Chạy Backend
+
+Mở CMD:
+
+```cmd
+cd C:\BrewLite\backend
 npm run start:dev
 ```
 
-Backend:
+Backend chạy tại:
 
 ```text
 http://localhost:3001
 ```
 
+Kiểm tra API sản phẩm:
+
+```text
+http://localhost:3001/products
+```
+
+Nếu API trả về danh sách sản phẩm thì Backend đã kết nối thành công với SQL Server.
+
 ---
 
-## 8. Chạy Frontend
+# 12. Chạy Frontend
 
-Mở terminal khác:
+Mở CMD mới:
 
-```bash
+```cmd
 cd C:\BrewLite\frontend
-```
-
-Cài đặt dependencies:
-
-```bash
-npm install
-```
-
-Chạy:
-
-```bash
 npm run dev
 ```
 
-Frontend:
+Frontend chạy tại:
+
+```text
+http://localhost:3000
+```
+
+Mở trình duyệt:
 
 ```text
 http://localhost:3000
@@ -258,21 +403,7 @@ http://localhost:3000
 
 ---
 
-## 9. Các trang chính của Frontend
-
-```text
-/                       Trang menu
-/products/:id           Chi tiết sản phẩm
-/cart                   Giỏ hàng
-/login                  Đăng nhập
-/checkout               Thanh toán
-/checkout/success       Xác nhận thanh toán
-/orders                 Lịch sử đơn hàng
-```
-
----
-
-## 10. Quy trình sử dụng hệ thống
+# 13. Luồng sử dụng chính
 
 ```text
 Trang chủ
@@ -287,169 +418,144 @@ Thêm vào giỏ hàng
    ↓
 Giỏ hàng
    ↓
-Thanh toán
+Checkout
    ↓
-Đăng nhập
+Nếu chưa đăng nhập → Login
    ↓
-Tạo đơn hàng.
+Tạo Order
    ↓
 Chọn WALLET / CARD
    ↓
-Xác nhận thanh toán
+Thanh toán
    ↓
-Thanh toán thành công
-   ↓
-Trạng thái PAID
+PAID
    ↓
 Checkout Success
    ↓
-Lịch sử đơn hàng
+Tài khoản
+   ↓
+Lịch sử mua hàng
 ```
 
 ---
 
-## 11. Trạng thái đơn hàng
+# 14. Các route chính
 
-Hệ thống hỗ trợ các trạng thái:
+## Frontend
 
 ```text
-PENDING
-PAID
-PAYMENT_FAILED
-PREPARING
-READY
-COMPLETED
-CANCELLED
+/                       Menu sản phẩm
+/products/:id           Chi tiết sản phẩm
+/cart                   Giỏ hàng
+/login                  Đăng nhập
+/checkout               Thanh toán
+/checkout/success       Xác nhận thanh toán
+/account                Tài khoản
+/orders                 Lịch sử đơn hàng
 ```
 
-### Ý nghĩa
+## Backend
 
 ```text
-PENDING
-↓
-Đơn hàng chờ thanh toán
+GET  /products
+GET  /products/:id
 
-PAID
-↓
-Thanh toán thành công
+POST /auth/register
+POST /auth/login
 
-PAYMENT_FAILED
-↓
-Thanh toán thất bại
-
-PREPARING
-↓
-Đang chuẩn bị đồ uống
-
-READY
-↓
-Đơn hàng đã sẵn sàng
-
-COMPLETED
-↓
-Đơn hàng hoàn thành
-
-CANCELLED
-↓
-Đơn hàng đã hủy
-```
-
----
-
-## 12. Authentication
-
-Hệ thống sử dụng JWT để xác thực người dùng.
-
-Các API yêu cầu đăng nhập:
-
-```text
 POST /orders
-GET /orders/me
-```
+GET  /orders/me
+PATCH /orders/:id/status
 
-JWT được gửi thông qua:
-
-```text
-Authorization: Bearer <access_token>
-```
-
-Password người dùng được mã hóa bằng:
-
-```text
-bcrypt
+POST /payments
 ```
 
 ---
 
-## 13. Kiểm tra TypeScript
+# 15. Đăng ký và đăng nhập
 
-### Backend
+Người dùng có thể đăng ký tài khoản mới từ Frontend.
 
-```bash
-cd C:\BrewLite\backend
-npx tsc --noEmit
+Sau khi đăng nhập:
+
+```text
+accessToken
+user
 ```
 
-### Frontend
+được lưu ở `localStorage` của trình duyệt.
 
-```bash
-cd C:\BrewLite\frontend
-npx tsc --noEmit
+Trang chủ sẽ hiển thị:
+
+```text
+Đăng nhập
 ```
 
-Nếu không có output lỗi thì TypeScript đã kiểm tra thành công.
+khi chưa đăng nhập.
+
+Khi đã đăng nhập sẽ hiển thị tên người dùng.
+
+Nhấn vào tên người dùng để mở:
+
+```text
+/account
+```
+
+Tại đây có:
+
+```text
+Thông tin tài khoản
+Lịch sử mua hàng
+Đăng xuất
+Về trang chủ
+```
 
 ---
 
-## 14. Kiểm thử thanh toán
+# 16. Thanh toán
 
-### Thanh toán thành công
-
-Trong file:
+Payment hỗ trợ:
 
 ```text
-backend/.env
+WALLET
+CARD
 ```
 
-sử dụng:
+Frontend gửi `Idempotency-Key` khi thanh toán.
+
+Ví dụ:
+
+```text
+Idempotency-Key: BREWLITE-ORDER-123
+```
+
+Backend dùng key này để tránh xử lý trùng cùng một yêu cầu thanh toán.
+
+---
+
+# 17. Mock Payment
+
+Trong:
+
+```text
+C:\BrewLite\backend\.env
+```
+
+Thanh toán thành công:
 
 ```env
 MOCK_PAYMENT_FAIL="false"
 ```
 
-Sau đó khởi động lại Backend.
-
-Kết quả:
-
-```text
-PENDING
-   ↓
-Thanh toán
-   ↓
-PAID
-```
-
-### Thanh toán thất bại
-
-Đổi thành:
+Kiểm thử thanh toán thất bại:
 
 ```env
 MOCK_PAYMENT_FAIL="true"
 ```
 
-Sau đó khởi động lại Backend.
+Sau khi thay đổi `.env`, cần khởi động lại Backend.
 
-Kết quả:
-
-```text
-PENDING
-   ↓
-Thanh toán thất bại
-   ↓
-PAYMENT_FAILED
-```
-
-Sau khi kiểm thử xong, có thể đưa lại:
+Sau khi kiểm thử thất bại, trả lại:
 
 ```env
 MOCK_PAYMENT_FAIL="false"
@@ -457,180 +563,431 @@ MOCK_PAYMENT_FAIL="false"
 
 ---
 
-## 15. Lịch sử đơn hàng
+# 18. Order State Machine
 
-API:
+Các trạng thái:
 
 ```text
-GET /orders/me
+PENDING
+PAID
+PAYMENT_FAILED
+PREPARING
+READY
+COMPLETED
+CANCELLED
 ```
 
-API yêu cầu JWT.
-
-Response trả về các thông tin:
+Luồng hợp lệ:
 
 ```text
-Order
-├── id
-├── userId
-├── status
-├── total
-├── discount
-├── loyaltyEarned
-├── createdAt
-├── updatedAt
-├── items
-│   ├── product
-│   ├── size
-│   ├── qty
-│   ├── unitPrice
-│   ├── lineTotal
-│   └── toppings
-└── payments
-    ├── method
-    ├── amount
-    └── status
+PENDING
+ ├──→ PAID
+ ├──→ PAYMENT_FAILED
+ └──→ CANCELLED
+
+PAYMENT_FAILED
+ ├──→ PENDING
+ └──→ CANCELLED
+
+PAID
+ ├──→ PREPARING
+ └──→ CANCELLED
+
+PREPARING
+ ├──→ READY
+ └──→ CANCELLED
+
+READY
+ └──→ COMPLETED
 ```
 
-Frontend hiển thị tại:
+Ví dụ không hợp lệ:
 
 ```text
-http://localhost:3000/orders
+PREPARING → COMPLETED
 ```
 
 ---
 
-## 16. Tài khoản kiểm thử
+# 19. Promotion
 
-Có thể tạo tài khoản mới từ trang đăng ký:
-
-```text
-http://localhost:3000/login
-```
-
-Quy trình kiểm thử:
+Mã khuyến mãi đang hỗ trợ:
 
 ```text
-Đăng ký
-   ↓
-Đăng nhập
-   ↓
-Xem menu
-   ↓
-Chọn sản phẩm
-   ↓
-Thêm vào giỏ
-   ↓
-Thanh toán
-   ↓
-Xem màn hình xác nhận
-   ↓
-Xem lịch sử đơn hàng
+BREW10
 ```
 
----
-
-## 17. Cách kiểm tra toàn bộ hệ thống
-
-### Bước 1 - Khởi động SQL Server
-
-Đảm bảo SQL Server đang chạy và database `BrewLite` tồn tại.
-
-### Bước 2 - Khởi động Backend
-
-```bash
-cd C:\BrewLite\backend
-npm run start:dev
-```
-
-### Bước 3 - Khởi động Frontend
-
-Mở terminal mới:
-
-```bash
-cd C:\BrewLite\frontend
-npm run dev
-```
-
-### Bước 4 - Mở hệ thống
+Quy tắc:
 
 ```text
-http://localhost:3000
+Giảm 10%
+Tối đa 20.000đ
 ```
-
-### Bước 5 - Kiểm thử
-
-```text
-Menu
-→ Product Detail
-→ Cart
-→ Login
-→ Checkout
-→ Payment
-→ Checkout Success
-→ Orders
-```
-
----
-
-## 18. Lưu ý bảo mật
-
-Không commit các thông tin bí mật:
-
-```text
-DB_PASSWORD
-JWT_SECRET
-access_token
-```
-
-File `.env` nên được thêm vào `.gitignore`.
 
 Ví dụ:
+
+```text
+45.000đ
+→ giảm 4.500đ
+→ thanh toán 40.500đ
+```
+
+Ví dụ đơn lớn:
+
+```text
+225.000đ
+→ 10% = 22.500đ
+→ giới hạn 20.000đ
+→ thanh toán 205.000đ
+```
+
+---
+
+# 20. Loyalty
+
+Quy tắc:
+
+```text
+Mỗi 10.000đ thanh toán thành công
+→ +1 loyalty point
+```
+
+Loyalty được tính trên số tiền thực tế sau giảm giá.
+
+Ví dụ:
+
+```text
+40.500đ
+→ floor(40.500 / 10.000)
+→ +4 điểm
+```
+
+Request thanh toán duplicate với cùng `Idempotency-Key` không cộng loyalty lần thứ hai.
+
+---
+
+# 21. Concurrent Stock
+
+Khi nhiều request cùng mua sản phẩm còn rất ít tồn kho, backend dùng cập nhật có điều kiện:
+
+```text
+stock >= quantity
+```
+
+Chỉ request phù hợp với tồn kho mới được cập nhật thành công.
+
+Ví dụ:
+
+```text
+Stock = 1
+
+Request A mua 1 → thành công
+Request B mua 1 → thất bại
+
+Stock cuối = 0
+```
+
+---
+
+# 22. Chạy kiểm tra TypeScript
+
+## Backend
+
+```cmd
+cd C:\BrewLite\backend
+npx tsc --noEmit
+```
+
+## Frontend
+
+```cmd
+cd C:\BrewLite\frontend
+npx tsc --noEmit
+```
+
+---
+
+# 23. Chạy toàn bộ test
+
+Backend đang sử dụng Vitest.
+
+Chạy:
+
+```cmd
+cd C:\BrewLite\backend
+npm test
+```
+
+Kết quả kiểm thử của phiên bản hiện tại:
+
+```text
+Test Files  10 passed (10)
+Tests       13 passed (13)
+```
+
+Các nhóm test quan trọng:
+
+```text
+Invalid transition
+Duplicate Idempotency-Key
+Concurrent Stock
+Auth
+Products
+Orders
+Payments
+Controllers
+```
+
+---
+
+# 24. Test Concurrent Stock riêng
+
+Có thể chạy:
+
+```cmd
+cd C:\BrewLite\backend
+npx vitest run src/orders/orders.concurrent.spec.ts
+```
+
+---
+
+# 25. Kiểm tra State Machine riêng
+
+```cmd
+cd C:\BrewLite\backend
+npx vitest run src/orders/orders.service.spec.ts
+```
+
+---
+
+# 26. Kiểm tra Idempotency riêng
+
+```cmd
+cd C:\BrewLite\backend
+npx vitest run src/payments/payments.service.spec.ts
+```
+
+---
+
+# 27. Các file cấu hình quan trọng
+
+```text
+C:\BrewLite\backend\.env
+C:\BrewLite\backend\prisma\schema.prisma
+C:\BrewLite\backend\prisma.config.ts
+C:\BrewLite\backend\src\main.ts
+C:\BrewLite\frontend\app\page.tsx
+```
+
+---
+
+# 28. Không commit file nhạy cảm
+
+Không commit:
+
+```text
+backend/.env
+frontend/.env.local
+access token
+password SQL Server
+JWT secret
+```
+
+`.gitignore` nên có tối thiểu:
 
 ```gitignore
 .env
 .env.local
 node_modules/
 .next/
+coverage/
 ```
 
 ---
 
-## 19. Mục tiêu dự án
+# 29. Khi người khác clone project và bị lỗi
 
-BrewLite hướng tới một quy trình đặt cà phê trực tuyến hoàn chỉnh:
+## Lỗi: `npm` không nhận diện
+
+Kiểm tra:
+
+```cmd
+node -v
+npm -v
+```
+
+Nếu không có, cài Node.js.
+
+---
+
+## Lỗi: không kết nối được SQL Server
+
+Kiểm tra:
 
 ```text
-Xem sản phẩm
-→ Chọn sản phẩm
-→ Tùy chỉnh
-→ Giỏ hàng
-→ Đặt hàng
-→ Thanh toán
-→ Xác nhận
-→ Xem lịch sử đơn hàng
+SQL Server service đang chạy
+TCP/IP đã bật
+Port = 1433
+Database BrewLite tồn tại
+DB_USER / DB_PASSWORD đúng
 ```
 
 ---
 
-## 20. Thông tin dự án
+## Lỗi: `Cannot connect to database`
+
+Kiểm tra file:
 
 ```text
-Project: BrewLite
-Mục đích: Software Engineering Project
-
-Frontend:
-Next.js + TypeScript + Tailwind CSS + Zustand
-
-Backend:
-NestJS + TypeScript + Prisma + JWT + bcrypt
-
-Database:
-Microsoft SQL Server
-
-Frontend Port:
-3000
-
-Backend Port:
-3001
+C:\BrewLite\backend\.env
 ```
+
+và đặc biệt:
+
+```text
+DB_SERVER
+DB_PORT
+DB_NAME
+DB_USER
+DB_PASSWORD
+```
+
+---
+
+## Lỗi: không có sản phẩm
+
+Chạy phần SQL trong mục:
+
+```text
+Dữ liệu mẫu sản phẩm
+```
+
+---
+
+## Lỗi: `401 Unauthorized`
+
+Nguyên nhân thường là:
+
+```text
+JWT không tồn tại
+JWT hết hạn
+chưa đăng nhập
+```
+
+Đăng nhập lại từ:
+
+```text
+http://localhost:3000/login
+```
+
+---
+
+## Lỗi: `Thiếu Idempotency-Key`
+
+Kiểm tra Frontend `/checkout` có gửi header:
+
+```text
+Idempotency-Key
+```
+
+Ví dụ:
+
+```text
+Idempotency-Key: BREWLITE-ORDER-123
+```
+
+---
+
+# 30. Khởi động lại toàn bộ project
+
+Nếu cần chạy lại từ đầu:
+
+## Terminal 1 - Backend
+
+```cmd
+cd C:\BrewLite\backend
+npm run start:dev
+```
+
+## Terminal 2 - Frontend
+
+```cmd
+cd C:\BrewLite\frontend
+npm run dev
+```
+
+Sau đó mở:
+
+```text
+http://localhost:3000
+```
+
+---
+
+# 31. Quy trình cài đặt nhanh trên máy mới
+
+Nếu tất cả công cụ đã được cài sẵn, các bước chính là:
+
+```cmd
+cd C:\
+git clone <LINK-GITHUB-CUA-BAN> BrewLite
+
+cd C:\BrewLite\backend
+npm install
+
+cd C:\BrewLite\frontend
+npm install
+```
+
+Sau đó:
+
+```text
+1. Cài / kiểm tra SQL Server
+2. Tạo database BrewLite
+3. Tạo backend/.env
+4. Chạy prisma migrate deploy
+5. Chạy prisma generate
+6. Tạo dữ liệu Product nếu database mới
+7. Chạy Backend
+8. Chạy Frontend
+9. Mở http://localhost:3000
+```
+
+---
+
+# 32. Tài khoản
+
+Không lưu mật khẩu thật trong README.
+
+Trên máy mới, cách an toàn nhất là đăng ký tài khoản mới bằng giao diện:
+
+```text
+http://localhost:3000/login
+```
+
+và sử dụng tài khoản đó để kiểm thử.
+
+---
+
+# 33. Tác giả
+
+```text
+BrewLite - Software Engineering Project
+```
+
+---
+
+# 34. Ghi chú quan trọng
+
+README này mô tả môi trường và luồng chạy của phiên bản BrewLite hiện tại.
+
+Nếu repository được thay đổi về:
+
+- cấu trúc database
+- biến môi trường
+- port
+- công nghệ
+- scripts npm
+- route API
+
+thì cần cập nhật README tương ứng.
