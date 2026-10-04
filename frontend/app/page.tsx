@@ -3,16 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useCartStore } from '@/store/cartStore';
-
-interface Product {
-  id: number;
-  name: string;
-  description: string | null;
-  price: number;
-  imageUrl: string | null;
-  stock: number;
-  isActive: boolean;
-}
+import { fetchJson, mockProducts, type Product } from '@/lib/api';
 
 interface User {
   id: number;
@@ -21,160 +12,78 @@ interface User {
   loyaltyPoints?: number;
 }
 
+const productArt = ['☕', '🧊', '🥛', '🍑'];
+
 export default function Home() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [products, setProducts] = useState<Product[]>(mockProducts);
   const [user, setUser] = useState<User | null>(null);
-
   const cartItems = useCartStore((state) => state.items);
-
-  const cartItemCount = cartItems.reduce(
-    (total, item) => total + item.quantity,
-    0,
-  );
+  const cartItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   useEffect(() => {
-    fetch('http://localhost:3001/products')
-      .then(async (res) => {
-        if (!res.ok) {
-          throw new Error('Không thể tải danh sách sản phẩm');
-        }
-
-        return res.json();
-      })
-      .then((data) => {
-        setProducts(data);
-      })
-      .catch((err) => {
-        setError(err.message);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-
-    // Kiểm tra người dùng đã đăng nhập hay chưa
+    fetchJson<Product[]>('/products', mockProducts).then(setProducts);
     const savedUser = localStorage.getItem('user');
-
     if (savedUser) {
       try {
         setUser(JSON.parse(savedUser));
       } catch {
         localStorage.removeItem('user');
         localStorage.removeItem('accessToken');
-        setUser(null);
       }
     }
   }, []);
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN').format(price) + 'đ';
-  };
+  const formatPrice = (price: number) => new Intl.NumberFormat('vi-VN').format(price) + 'đ';
 
   return (
-    <main className="min-h-screen bg-gray-100 px-6 py-10">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-8 flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-4xl font-bold text-amber-900">
-              BrewLite
-            </h1>
-
-            <p className="mt-2 text-gray-600">
-              Cà phê ngon - Đặt nhanh - Thanh toán không tiền mặt
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* Tài khoản */}
-            {!user ? (
-              <Link
-                href="/login"
-                className="rounded-xl border border-amber-700 bg-white px-5 py-3 font-semibold text-amber-800 shadow hover:bg-amber-50"
-              >
-                Đăng nhập
-              </Link>
-            ) : (
-              <Link
-                href="/account"
-                className="rounded-xl border border-amber-700 bg-white px-5 py-3 font-semibold text-amber-800 shadow hover:bg-amber-50"
-              >
-                👤 {user.name || user.email}
-              </Link>
-            )}
-
-            {/* Giỏ hàng */}
-            <Link
-              href="/cart"
-              className="relative rounded-xl bg-amber-700 px-5 py-3 font-semibold text-white shadow hover:bg-amber-800"
-            >
-              🛒 Giỏ hàng
-
-              {cartItemCount > 0 && (
-                <span className="absolute -right-2 -top-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-red-600 px-1 text-xs font-bold text-white">
-                  {cartItemCount}
-                </span>
-              )}
-            </Link>
+    <main className="storefront">
+      <header className="site-header">
+        <div className="nav-wrap">
+          <Link href="/" className="brand" aria-label="BrewLite trang chủ">
+            <span className="brand-mark">b</span><span>Brew<span className="brand-light">Lite</span><small>COFFEE HOUSE</small></span>
+          </Link>
+          <nav className="main-nav" aria-label="Điều hướng chính">
+            <a href="#menu" className="nav-active">Thực đơn</a>
+            <a href="#about">Về BrewLite</a>
+            <a href="#promise">Chất lượng</a>
+          </nav>
+          <div className="nav-actions">
+            {user ? <Link href="/account" className="account-link"><span className="avatar">{(user.name || user.email).charAt(0).toUpperCase()}</span><span>{user.name || 'Tài khoản'}</span></Link> : <Link href="/login" className="login-link">Đăng nhập</Link>}
+            <Link href="/cart" className="cart-link"><span aria-hidden="true">▱</span><span>Giỏ hàng</span>{cartItemCount > 0 && <b className="cart-count">{cartItemCount}</b>}</Link>
           </div>
         </div>
+      </header>
 
-        {loading && (
-          <div className="py-10 text-center text-gray-500">
-            Đang tải sản phẩm...
-          </div>
-        )}
+      <section className="hero" id="about">
+        <div className="hero-copy">
+          <span className="eyebrow"><span className="eyebrow-line" /> CÀ PHÊ MỖI NGÀY, NIỀM VUI MỖI NGÀY</span>
+          <h1>Một chút <em>đậm đà,</em><br />cả ngày <em>thăng hoa.</em></h1>
+          <p>Từ những hạt cà phê được tuyển chọn đến ly cà phê pha bằng cả sự tận tâm — dành riêng cho nhịp sống của bạn.</p>
+          <div className="hero-actions"><a className="primary-cta" href="#menu">Khám phá thực đơn <span>↗</span></a><span className="hero-note"><span className="rating-star">★</span> Được pha tươi mỗi ngày</span></div>
+          <div className="hero-stats"><div><strong>100%</strong><span>Hạt cà phê tuyển chọn</span></div><i /><div><strong>5 phút</strong><span>Giao tận tay nhanh chóng</span></div></div>
+        </div>
+        <div className="hero-art" aria-label="Ly cà phê BrewLite">
+          <div className="art-sun" /><span className="art-leaf leaf-one">✳</span><span className="art-leaf leaf-two">✳</span>
+          <div className="coffee-cup"><div className="cup-steam">∿</div><div className="cup-lid" /><div className="cup-body"><span className="cup-logo">b<span>.</span></span><small>BREWLITE</small></div><div className="cup-shadow" /></div>
+          <div className="art-caption"><span>01 / 04</span><i /><span>OUR SIGNATURE</span></div>
+          <div className="floating-note"><span>✦</span><div><b>Đậm vị nguyên bản</b><small>Chắt lọc trong từng giọt</small></div></div>
+        </div>
+        <div className="hero-bottom"><span>SCROLL TO DISCOVER</span><span className="scroll-mark">↓</span><span className="hero-index">01 — 04</span></div>
+      </section>
 
-        {error && (
-          <div className="rounded-lg bg-red-100 p-4 text-red-700">
-            {error}
-          </div>
-        )}
+      <section className="promise-strip" id="promise"><div><span>✳</span><p><b>Hạt tuyển chọn</b><small>Chất lượng từ nguồn</small></p></div><i /><div><span>◷</span><p><b>Pha tươi mỗi ngày</b><small>Trọn vẹn hương vị</small></p></div><i /><div><span>♧</span><p><b>Giao nhanh tận nơi</b><small>Tiện lợi cho bạn</small></p></div><i /><div><span>♡</span><p><b>Chạm là có cà phê</b><small>Đặt hàng thật dễ dàng</small></p></div></section>
 
-        {!loading && !error && products.length === 0 && (
-          <div className="rounded-lg bg-white p-8 text-center text-gray-500">
-            Chưa có sản phẩm nào.
-          </div>
-        )}
+      <section className="menu-section" id="menu">
+        <div className="section-heading"><div><span className="eyebrow dark-eyebrow"><span className="eyebrow-line" /> ĐƯỢC YÊU THÍCH</span><h2>Chọn vị bạn <em>thương.</em></h2><p>Mỗi ly là một khoảnh khắc nhỏ đáng yêu trong ngày.</p></div><a className="text-link" href="#menu">Xem toàn bộ thực đơn <span>↗</span></a></div>
+        {products.length === 0 ? <div className="empty-menu">Hiện chưa có sản phẩm. BrewLite sẽ sớm trở lại với bạn!</div> : <div className="product-grid">{products.map((product, index) => <article className="product-card" key={product.id}>
+          <Link href={`/products/${product.id}`} className={`product-art product-art-${index % 4}`} aria-label={`Xem ${product.name}`}>
+            <span className="product-tag">{index === 0 ? 'BÁN CHẠY' : index === 2 ? 'ĐƯỢC YÊU THÍCH' : 'BREWLITE PICK'}</span><span className="product-illustration">{productArt[index % productArt.length]}</span><span className="product-art-label">BREWLITE <b>·</b> FRESH DAILY</span>
+          </Link>
+          <div className="product-info"><div className="product-title-row"><Link href={`/products/${product.id}`}><h3>{product.name}</h3></Link><span className="product-rating">★ 4.9</span></div><p>{product.description || 'Hương vị cân bằng, thơm ngon vừa đủ.'}</p><div className="product-buy"><strong>{formatPrice(product.price)}</strong><Link href={`/products/${product.id}`} className="add-button" aria-label={`Chọn ${product.name}`}>+</Link></div></div>
+        </article>)}</div>}
+      </section>
 
-        {!loading && !error && products.length > 0 && (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className="overflow-hidden rounded-2xl bg-white shadow-md"
-              >
-                <div className="flex h-48 items-center justify-center bg-amber-100">
-                  <span className="text-6xl">☕</span>
-                </div>
-
-                <div className="p-5">
-                  <h2 className="text-xl font-semibold text-gray-800">
-                    {product.name}
-                  </h2>
-
-                  <p className="mt-2 min-h-12 text-sm text-gray-500">
-                    {product.description}
-                  </p>
-
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="text-lg font-bold text-amber-700">
-                      {formatPrice(product.price)}
-                    </span>
-
-                    <Link
-                      href={`/products/${product.id}`}
-                      className="rounded-lg bg-amber-700 px-4 py-2 text-sm font-medium text-white"
-                    >
-                      Chọn
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <footer className="site-footer"><Link href="/" className="brand footer-brand"><span className="brand-mark">b</span><span>Brew<span className="brand-light">Lite</span><small>COFFEE HOUSE</small></span></Link><span>Cà phê ngon, ngày thêm vui.</span><span>© 2025 BrewLite Coffee House</span></footer>
     </main>
   );
 }
