@@ -59,7 +59,7 @@ export default function Home() {
           <span className="eyebrow"><span className="eyebrow-line" /> CÀ PHÊ MỖI NGÀY, NIỀM VUI MỖI NGÀY</span>
           <h1>Một chút <em>đậm đà,</em><br />cả ngày <em>thăng hoa.</em></h1>
           <p>Từ những hạt cà phê được tuyển chọn đến ly cà phê pha bằng cả sự tận tâm — dành riêng cho nhịp sống của bạn.</p>
-          <div className="hero-actions"><a className="primary-cta" href="#menu">Khám phá thực đơn <span>↗</span></a><span className="hero-note"><span className="rating-star">★</span> Được pha tươi mỗi ngày</span></div>
+          <div className="hero-actions"><a className="primary-cta" href="#menu">Khám phá thực đơn <span>↗</span></a><span className="hero-note"><span className="fresh-mark">✳</span> Được pha tươi mỗi ngày</span></div>
           <div className="hero-stats"><div><strong>100%</strong><span>Hạt cà phê tuyển chọn</span></div><i /><div><strong>5 phút</strong><span>Giao tận tay nhanh chóng</span></div></div>
         </div>
         <div className="hero-art" aria-label="Ly cà phê BrewLite">
@@ -79,7 +79,7 @@ export default function Home() {
           <Link href={`/products/${product.id}`} className={`product-art product-art-${index % 4}`} aria-label={`Xem ${product.name}`}>
             <span className="product-tag">{index === 0 ? 'BÁN CHẠY' : index === 2 ? 'ĐƯỢC YÊU THÍCH' : 'BREWLITE PICK'}</span><span className="product-illustration">{productArt[index % productArt.length]}</span><span className="product-art-label">BREWLITE <b>·</b> FRESH DAILY</span>
           </Link>
-          <div className="product-info"><div className="product-title-row"><Link href={`/products/${product.id}`}><h3>{product.name}</h3></Link><span className="product-rating">★ 4.9</span></div><p>{product.description || 'Hương vị cân bằng, thơm ngon vừa đủ.'}</p><div className="product-buy"><strong>{formatPrice(product.price)}</strong><Link href={`/products/${product.id}`} className="add-button" aria-label={`Chọn ${product.name}`}>+</Link></div></div>
+          <div className="product-info"><div className="product-title-row"><Link href={`/products/${product.id}`}><h3>{product.name}</h3></Link></div><p>{product.description || 'Hương vị cân bằng, thơm ngon vừa đủ.'}</p><div className="product-buy"><strong>{formatPrice(product.price)}</strong><Link href={`/products/${product.id}`} className="add-button" aria-label={`Chọn ${product.name}`}>+</Link></div></div>
         </article>)}</div>}
       </section>
 

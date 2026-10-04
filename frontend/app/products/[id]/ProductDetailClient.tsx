@@ -23,6 +23,8 @@ export default function ProductDetailClient({ id }: { id: string }) {
   const [size, setSize] = useState('M');
   const [toppings, setToppings] = useState<string[]>([]);
   const addItem = useCartStore((state) => state.addItem);
+  const cartItems = useCartStore((state) => state.items);
+  const cartItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   useEffect(() => {
     let cancelled = false;
@@ -100,130 +102,42 @@ export default function ProductDetailClient({ id }: { id: string }) {
     );
   };
 
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-gray-100 px-6 py-10">
-        <div className="mx-auto max-w-4xl text-center">
-          Đang tải sản phẩm...
-        </div>
-      </main>
-    );
-  }
-
-  if (error || !product) {
-    return (
-      <main className="min-h-screen bg-gray-100 px-6 py-10">
-        <div className="mx-auto max-w-4xl">
-          <Link
-            href="/"
-            className="mb-6 inline-block rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-100"
-          >
-            ← Quay về trang chủ
-          </Link>
-
-          <div className="rounded-2xl bg-white p-8 text-center shadow">
-            <p className="text-red-600">{error || 'Không tìm thấy sản phẩm'}</p>
-          </div>
-        </div>
-      </main>
-    );
-  }
+  const artIndex = product ? (product.id - 1) % 4 : 0;
+  const art = ['☕', '🧊', '🥛', '🍑'][artIndex];
 
   return (
-    <main className="min-h-screen bg-gray-100 px-6 py-10">
-      <div className="mx-auto max-w-4xl">
-        <Link
-          href="/"
-          className="mb-6 inline-block rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-100"
-        >
-          ← Quay về trang chủ
-        </Link>
-
-        <div className="rounded-2xl bg-white p-8 shadow-md">
-          <div className="flex h-64 items-center justify-center rounded-xl bg-amber-100">
-            <span className="text-8xl">☕</span>
-          </div>
-
-          <h1 className="mt-6 text-3xl font-bold text-amber-900">
-            {product.name}
-          </h1>
-
-          <p className="mt-3 text-gray-600">{product.description}</p>
-
-          <p className="mt-4 text-2xl font-bold text-amber-700">
-            {formatPrice(totalPrice)}
-          </p>
-
-          <div className="mt-8">
-            <h2 className="mb-3 text-lg font-semibold text-gray-800">Size</h2>
-
-            <div className="flex gap-3">
-              {['S', 'M', 'L'].map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => setSize(item)}
-                  className={`rounded-lg border px-6 py-3 font-medium ${
-                    size === item
-                      ? 'border-amber-700 bg-amber-700 text-white'
-                      : 'border-gray-300 bg-white text-gray-700'
-                  }`}
-                >
-                  {item}
-                  {sizeExtra[item] > 0 && (
-                    <span className="ml-1 text-sm">
-                      (+{formatPrice(sizeExtra[item])})
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-8">
-              <h2 className="mb-3 text-lg font-semibold text-gray-800">
-                Topping
-              </h2>
-
-              <div className="space-y-3">
-                {Object.keys(toppingExtra).map((topping) => (
-                  <label
-                    key={topping}
-                    className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 hover:bg-gray-50"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={toppings.includes(topping)}
-                      onChange={() => toggleTopping(topping)}
-                      className="h-4 w-4"
-                    />
-
-                    <span className="text-gray-700">{topping}</span>
-
-                    <span className="ml-auto text-sm text-gray-500">
-                      +{formatPrice(toppingExtra[topping])}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              disabled={!product || product.stock <= 0}
-              className="mt-6 w-full rounded-xl bg-amber-700 px-6 py-4 text-lg font-semibold text-white transition hover:bg-amber-800 disabled:cursor-not-allowed disabled:bg-gray-400"
-            >
-              {!product
-                ? 'Đang tải...'
-                : product.stock <= 0
-                  ? 'Hết hàng'
-                  : 'Thêm vào giỏ hàng'}
-            </button>
-          </div>
-
-          <p className="mt-2 text-sm text-gray-500">Còn lại: {product.stock}</p>
+    <main className="storefront product-page">
+      <header className="site-header">
+        <div className="nav-wrap">
+          <Link href="/" className="brand" aria-label="BrewLite trang chủ"><span className="brand-mark">b</span><span>Brew<span className="brand-light">Lite</span><small>COFFEE HOUSE</small></span></Link>
+          <nav className="main-nav" aria-label="Điều hướng chính"><Link href="/#menu" className="nav-active">Thực đơn</Link><Link href="/#about">Về BrewLite</Link><Link href="/#promise">Chất lượng</Link></nav>
+          <div className="nav-actions"><Link href="/login" className="login-link">Đăng nhập</Link><Link href="/cart" className="cart-link"><span aria-hidden="true">▱</span><span>Giỏ hàng</span>{cartItemCount > 0 && <b className="cart-count">{cartItemCount}</b>}</Link></div>
         </div>
+      </header>
+
+      <div className="detail-wrap">
+        <div className="breadcrumbs"><Link href="/">Trang chủ</Link><span>›</span><Link href="/#menu">Thực đơn</Link><span>›</span><span>{loading ? 'Đang tải...' : product?.name || 'Sản phẩm'}</span></div>
+        {loading ? <div className="detail-loading"><span className="loading-cup">☕</span><p>Đang chuẩn bị sản phẩm cho bạn...</p></div> : error || !product ? <div className="detail-error"><span>☕</span><h1>Chưa tìm thấy món này</h1><p>{error || 'Sản phẩm hiện không khả dụng.'}</p><Link href="/" className="primary-cta">Quay lại thực đơn <span>↗</span></Link></div> : <>
+          <div className="detail-layout">
+            <section className={`detail-visual product-art-${artIndex}`} aria-label={`Hình minh họa ${product.name}`}>
+              <span className="detail-badge">BREWLITE SIGNATURE</span><span className="detail-orbit" /><span className="detail-drink">{art}</span><span className="detail-visual-name">BrewLite <b>·</b> fresh daily</span><span className="detail-visual-spark">✳</span>
+            </section>
+            <section className="detail-content">
+              <span className="eyebrow dark-eyebrow"><span className="eyebrow-line" /> PHA TƯƠI MỖI NGÀY</span>
+              <h1>{product.name}</h1>
+              <p className="detail-description">{product.description || 'Hương vị cân bằng, thơm ngon vừa đủ. Được pha mới mỗi ngày từ những nguyên liệu tuyển chọn.'}</p>
+              <div className="detail-price">{formatPrice(totalPrice)}<small>Đã bao gồm tùy chọn bạn chọn</small></div>
+              <div className="option-block"><div className="option-heading"><b>Chọn kích cỡ</b><span>Chọn 1</span></div><div className="size-options">{(['S', 'M', 'L'] as const).map((item) => <button key={item} type="button" onClick={() => setSize(item)} className={`size-option ${size === item ? 'selected' : ''}`} aria-pressed={size === item}><span className="size-name">{item}</span><span className="size-price">{sizeExtra[item] === 0 ? 'Tiêu chuẩn' : `+${formatPrice(sizeExtra[item])}`}</span>{size === item && <span className="size-check">✓</span>}</button>)}</div></div>
+              <div className="option-block toppings-block"><div className="option-heading"><b>Thêm topping</b><span>Tùy chọn</span></div><div className="topping-options">{Object.keys(toppingExtra).map((topping, index) => <label key={topping} className={`topping-option ${toppings.includes(topping) ? 'selected' : ''}`}><input type="checkbox" checked={toppings.includes(topping)} onChange={() => toggleTopping(topping)} /><span className="topping-icon">{index === 0 ? '◉' : '✧'}</span><span className="topping-name">{topping}<small>{index === 0 ? 'Dai mềm, ngọt dịu' : 'Béo mịn, thơm nhẹ'}</small></span><b>+{formatPrice(toppingExtra[topping])}</b></label>)}</div></div>
+              <div className="stock-note"><span className={product.stock > 0 ? 'stock-dot' : 'stock-dot sold-out'} />{product.stock > 0 ? `Còn ${product.stock} phần hôm nay` : 'Tạm hết hàng hôm nay'}</div>
+              <button type="button" onClick={handleAddToCart} disabled={product.stock <= 0} className="detail-add-button"><span>Thêm vào giỏ hàng</span><b>{formatPrice(totalPrice)}</b><span aria-hidden="true">↗</span></button>
+              <p className="fresh-note">✦ &nbsp; Pha mới sau khi bạn đặt — ngon nhất khi thưởng thức ngay.</p>
+            </section>
+          </div>
+          <section className="detail-perks"><div><span>✳</span><p><b>Nguyên liệu chọn lọc</b><small>Chỉ chọn điều tốt nhất</small></p></div><i /><div><span>♨</span><p><b>Pha mới theo đơn</b><small>Trọn vẹn hương vị</small></p></div><i /><div><span>♡</span><p><b>Chăm chút từng ly</b><small>Niềm vui trong từng ngụm</small></p></div></section>
+        </>}
       </div>
+      <footer className="site-footer"><Link href="/" className="brand footer-brand"><span className="brand-mark">b</span><span>Brew<span className="brand-light">Lite</span><small>COFFEE HOUSE</small></span></Link><span>Cà phê ngon, ngày thêm vui.</span><span>© 2026 BrewLite Coffee House</span></footer>
     </main>
   );
 }
