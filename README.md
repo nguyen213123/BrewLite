@@ -23,6 +23,37 @@ Hệ thống hỗ trợ:
 
 ---
 
+# 🚀 Khởi chạy nhanh bằng Docker (Khuyến nghị)
+
+Chỉ cần một lệnh duy nhất để build và khởi động toàn bộ hệ thống gồm Frontend, Backend và SQL Server:
+
+```bash
+docker compose up -d --build
+```
+
+Sau khi các container khởi động hoàn tất:
+- **Frontend (Next.js):** [http://localhost:3000](http://localhost:3000)
+- **Backend API (NestJS):** [http://localhost:3001](http://localhost:3001)
+- **Database (SQL Server):** `localhost:1433` (Database: `BrewLite`, User: `sa`, Password: `BrewLite@2026!`)
+
+Quy trình tự động hóa tích hợp:
+1. Đợi SQL Server sẵn sàng nhận kết nối (`healthcheck`).
+2. Tự động kiểm tra và tạo cơ sở dữ liệu `BrewLite` nếu chưa tồn tại.
+3. Chạy di cư dữ liệu (`npx prisma migrate deploy`).
+4. Tự động nạp (seed) 4 sản phẩm cà phê mặc định nếu bảng còn trống.
+
+Dừng các dịch vụ:
+```bash
+docker compose down
+```
+
+Dừng và xóa toàn bộ dữ liệu volume database (để reset về ban đầu):
+```bash
+docker compose down -v
+```
+
+---
+
 # 1. Công nghệ sử dụng
 
 ## Frontend
